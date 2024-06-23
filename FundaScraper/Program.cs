@@ -9,6 +9,7 @@ var builder = Host.CreateApplicationBuilder();
 
 builder.Configuration.AddJsonFile("defaults.json", optional: false);
 builder.Configuration.AddJsonFile($"defaults.{builder.Environment.EnvironmentName}.json", optional: true);
+builder.Configuration.AddCommandLine(args);
 
 builder.Services.AddOptions<FundaScraperSettings>()
     .Bind(builder.Configuration)
