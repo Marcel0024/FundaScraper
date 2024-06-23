@@ -47,7 +47,7 @@ jobs:
       with:
         context: .
         file: ./FundaScraper/Dockerfile
-        push: github.ref == 'refs/heads/main'
+        push: ${{ github.ref == 'refs/heads/main' }}
         tags: |
             ghcr.io/marcel0024/funda-scraper:${{ steps.getVersion.outputs.info }}
             ghcr.io/marcel0024/funda-scraper:latest
