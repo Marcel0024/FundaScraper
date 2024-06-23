@@ -29,7 +29,7 @@ internal class WebhookSink(
 
         try
         {
-            listingModel = JsonSerializer.Deserialize<ListingModel>(entity.Data.ToString());
+            listingModel = JsonSerializer.Deserialize<ListingModel>(entity.Data.ToString())!;
         }
         catch { return; }
 

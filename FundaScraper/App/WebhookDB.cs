@@ -4,7 +4,7 @@ namespace FundaScraper.App;
 
 internal class WebhookDB
 {
-    private readonly string DatabaseFilePath = Path.Combine("/data", "webhooks-history.json");
+    private readonly string WebhooksHistoryJson = Constants.FileNames.WebhooksHistoryJson;
     private  Dictionary<string, ListingModel> Listings { get; init; }
 
     public WebhookDB()
@@ -26,14 +26,14 @@ internal class WebhookDB
 
     private async Task<DbModel> GetHistoryFile()
     {
-        if (!File.Exists(DatabaseFilePath))
+        if (!File.Exists(WebhooksHistoryJson))
         {
             return new DbModel([]);
         }
 
         try
         {
-            var json = await File.ReadAllTextAsync(DatabaseFilePath);
+            var json = await File.ReadAllTextAsync(WebhooksHistoryJson);
             return JsonSerializer.Deserialize<DbModel>(json)!;
         }
         catch
@@ -46,9 +46,9 @@ internal class WebhookDB
     {
         var json = JsonSerializer.Serialize(model);
 
-        Directory.CreateDirectory(Path.GetDirectoryName(DatabaseFilePath)!);
+        Directory.CreateDirectory(Path.GetDirectoryName(WebhooksHistoryJson)!);
 
-        await File.WriteAllTextAsync(DatabaseFilePath, json);
+        await File.WriteAllTextAsync(WebhooksHistoryJson, json);
     }
 }
 

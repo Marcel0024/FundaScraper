@@ -38,7 +38,7 @@ internal class FundaScraperBackgroundService(
                     new(nameof(ListingModel.ZipCode), settings.Value.ZipCodeSelector)
                 ])
             .AddSink(webhookSink)
-            .AddSink(new CsvFileSink(Path.Combine("/data", "results.csv"), dataCleanupOnStart: true))
+            .AddSink(new CsvFileSink(Constants.FileNames.ResultsFilePath, dataCleanupOnStart: true))
             .WithParallelismDegree(settings.Value.ParallelismDegree)
             .PageCrawlLimit(settings.Value.PageCrawlLimit);
 
