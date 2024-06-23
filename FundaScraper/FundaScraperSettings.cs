@@ -14,10 +14,10 @@ internal class FundaScraperSettings
     [Required, FundaUrl]
     [ConfigurationKeyName("FUNDA_URL")] public required string FundaUrl { get; init; }
 
-    [Url]
+    [OptionalUrl]
     [ConfigurationKeyName("WEBHOOK_URL")] public string? WebHookUrl { get; init; }
 
-    [Url]
+    [OptionalUrl]
     [ConfigurationKeyName("ERROR_WEBHOOK_URL")] public string? ErrorWebHookUrl { get; init; }
 
     [Range(1, 5000)]
@@ -55,5 +55,18 @@ internal class FundaUrlAttribute : ValidationAttribute
         }
 
         return value is string valueAsString && valueAsString.StartsWith("https://www.funda.nl/", StringComparison.OrdinalIgnoreCase);
+    }
+}
+
+internal class OptionalUrlAttribute : ValidationAttribute
+{
+    public override bool IsValid(object? value)
+    {
+        if (value is null || value is not string valueAsString || string.IsNullOrWhiteSpace(valueAsString))
+        {
+            return true;
+        }
+
+        return valueAsString.StartsWith("https://www.funda.nl/", StringComparison.OrdinalIgnoreCase);
     }
 }
