@@ -1,16 +1,25 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using FundaScraper.App;
+using Microsoft.Extensions.Configuration;
+using FundaScraper;
+using FundaScraper.Utilities;
 
 var builder = Host.CreateApplicationBuilder();
 
-builder.Services.AddOptions<AppSettings>()
+builder.Configuration.AddJsonFile("defaults.json", optional: false);
+builder.Configuration.AddJsonFile($"defaults.{builder.Environment.EnvironmentName}.json", optional: true);
+
+builder.Services.AddOptions<FundaScraperSettings>()
     .Bind(builder.Configuration)
     .ValidateDataAnnotations()
     .ValidateOnStart();
 
+builder.Services.AddSingleton<CronPeriodicTimer>();
 builder.Services.AddSingleton<WebhookSink>();
-builder.Services.AddSingleton<WebhookTracker>();
+builder.Services.AddSingleton<WebhookDB>();
+
+builder.Services.AddSingleton(TimeProvider.System);
 
 builder.Services.AddHttpClient();
 builder.Services.AddHostedService<FundaScraperBackgroundService>();

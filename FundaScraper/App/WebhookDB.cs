@@ -2,24 +2,24 @@
 
 namespace FundaScraper.App;
 
-internal class WebhookTracker
+internal class WebhookDB
 {
     private readonly string DatabaseFilePath = Path.Combine("/data", "webhooks-history.json");
-    private  Dictionary<string, Entry> Listings { get; init; }
+    private  Dictionary<string, ListingModel> Listings { get; init; }
 
-    public WebhookTracker()
+    public WebhookDB()
     {
         Listings = GetHistoryFile().GetAwaiter().GetResult().Listings;
     }
 
-    public bool Contains(string name)
+    public bool Contains(ListingModel entry)
     {
-        return Listings.ContainsKey(name);
+        return Listings.ContainsKey(entry.Url);
     }
 
-    internal async Task SaveWebHook(Entry entry)
+    internal async Task SaveWebHook(ListingModel entry)
     {
-        Listings[entry.Name] = entry;
+        Listings[entry.Url] = entry;
 
         await SaveHistoryFile(new DbModel(Listings));
     }
@@ -52,5 +52,4 @@ internal class WebhookTracker
     }
 }
 
-public record DbModel(Dictionary<string, Entry> Listings);
-public record Entry(string Name, string Address, string Price, string Url, DateTimeOffset DateTimeAdded);
+public record DbModel(Dictionary<string, ListingModel> Listings);

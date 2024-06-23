@@ -22,13 +22,13 @@ jobs:
         dotnet-version: '8.x'
 
     - name: Publish App
-      run:  dotnet publish ./src/FundaScraper/FundaScraper.csproj -c Release -o ./publish
+      run:  dotnet publish ./FundaScraper/FundaScraper.csproj -c Release -o ./publish
 
     - name: Get XML Version in .csproj
       id: getVersion
       uses: mavrosxristoforos/get-xml-info@2.0
       with:
-        xml-file: 'src/FundaScraper/FundaScraper.csproj'
+        xml-file: 'FundaScraper/FundaScraper.csproj'
         xpath: '/Project/PropertyGroup/Version'
 
     - name: Log in to the Container registry
@@ -46,8 +46,8 @@ jobs:
       uses: docker/build-push-action@v3
       with:
         context: .
-        file: ./src/FundaScraper/Dockerfile
-        push: ${{ github.event_name != 'pull_request' }}
+        file: ./FundaScraper/Dockerfile
+        push: github.ref == 'refs/heads/main'
         tags: |
             ghcr.io/marcel0024/funda-scraper:${{ steps.getVersion.outputs.info }}
             ghcr.io/marcel0024/funda-scraper:latest

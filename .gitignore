@@ -289,4 +289,5 @@ __pycache__/
 *.xsd.cs
 
 appsettings.Development.json
+defaults.Development.json
 build.sh
