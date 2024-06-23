@@ -15,6 +15,11 @@ ENV PUPPETEER_EXECUTABLE_PATH "/usr/bin/google-chrome-stable"
 RUN apt-get update
 RUN apt-get install -y xvfb
 
+# Create a directory for app and set permissions
+RUN mkdir -p /data \
+    && chown -R app:app /data
+
+
 USER app
 WORKDIR /app
 
