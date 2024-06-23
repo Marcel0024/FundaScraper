@@ -67,6 +67,6 @@ internal class OptionalUrlAttribute : ValidationAttribute
             return true;
         }
 
-        return valueAsString.StartsWith("https://www.funda.nl/", StringComparison.OrdinalIgnoreCase);
+        return valueAsString.StartsWith("http", StringComparison.OrdinalIgnoreCase);
     }
 }
