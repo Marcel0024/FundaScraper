@@ -1,10 +1,12 @@
 {
   "CRON": "0 7 * * *",
-  "PAGE_CRAWL_LIMIT": 500,
   "START_PAGE": 1,
   "TOTAL_PAGES": 5,
   "RUN_ON_STARTUP": false,
+  "PAGE_CRAWL_LIMIT": 500,
   "TOTAL_PARALLELISM_DEGREE": 5,
+  "ENGINE_TIME_BOX_IN_MINUTES": 10,
+  "WAIT_ON_SCRAPING_PAGE_MILLISECONDS": 3000,
   "LISTING_SELECTOR": "a[data-test-id=\"object-image-link\"]",
   "TITLE_SELECTOR": "h1.object-header__container > span.block.text-2xl.font-bold",
   "ZIP_CODE_SELECTOR": "h1.object-header__container > span.text-neutral-40",

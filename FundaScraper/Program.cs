@@ -1,8 +1,8 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using FundaScraper.App;
-using Microsoft.Extensions.Configuration;
-using FundaScraper;
+using FundaScraper.Models;
 using FundaScraper.Utilities;
 
 var builder = Host.CreateApplicationBuilder();

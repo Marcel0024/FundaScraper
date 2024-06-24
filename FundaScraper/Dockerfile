@@ -20,6 +20,8 @@ WORKDIR /app
 
 COPY ./publish .
 
+ENV TZ="Europe/Amsterdam"
+
 ENTRYPOINT ["/bin/sh", "-c", "xvfb-run -a $@", ""]
 CMD ["dotnet", "FundaScraper.dll"]
 

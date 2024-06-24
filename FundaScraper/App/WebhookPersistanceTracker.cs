@@ -1,4 +1,6 @@
 ﻿using System.Text.Json;
+using FundaScraper.Models;
+using FundaScraper.Utilities;
 
 namespace FundaScraper.App;
 
@@ -12,12 +14,12 @@ internal class WebhookPersistanceTracker
         Listings = GetHistoryFile().GetAwaiter().GetResult().Listings;
     }
 
-    public bool Contains(ListingModel entry)
+    public bool HasSentBefore(ListingModel entry)
     {
         return Listings.ContainsKey(entry.Url);
     }
 
-    internal async Task SaveWebHook(ListingModel entry)
+    internal async Task MarkAsSent(ListingModel entry)
     {
         Listings[entry.Url] = entry;
 

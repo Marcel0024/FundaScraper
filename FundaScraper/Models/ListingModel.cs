@@ -1,4 +1,4 @@
-﻿namespace FundaScraper;
+﻿namespace FundaScraper.Models;
 
 public class ListingModel
 {

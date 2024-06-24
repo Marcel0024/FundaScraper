@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using FundaScraper.Models;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System.Net.Http.Json;
 using System.Text.Json;
@@ -17,29 +18,27 @@ internal class WebhookSink(
     public bool DataCleanupOnStart { get; set; } = false;
 
     private readonly JsonSerializerOptions serializerOptions = new(JsonSerializerDefaults.Web);
+    private readonly bool IsWebhookEnabled = !string.IsNullOrWhiteSpace(settings.Value.WebHookUrl);
 
     public async Task EmitAsync(ParsedData entity, CancellationToken cancellationToken = default)
     {
-        if (settings.Value.WebHookUrl is null)
+        if (!IsWebhookEnabled)
         {
             return;
         }
 
         ListingModel listingModel;
 
-        try
-        {
-            listingModel = JsonSerializer.Deserialize<ListingModel>(entity.Data.ToString())!;
-        }
-        catch { return; }
+
+        listingModel = JsonSerializer.Deserialize<ListingModel>(entity.Data.ToString())!;
 
         listingModel.Url = entity.Url;
         listingModel.DateTimeAdded = timeProvider.GetLocalNow();
 
-        if (listingModel is null 
-            || listingModel.Title is null 
-            || listingModel.Price is null 
-            || webhookPersistance.Contains(listingModel))
+        if (listingModel is null
+            || listingModel.Title is null
+            || listingModel.Price is null
+            || webhookPersistance.HasSentBefore(listingModel))
         {
             return;
         }
@@ -51,7 +50,7 @@ internal class WebhookSink(
 
         response.EnsureSuccessStatusCode();
 
-        await webhookPersistance.SaveWebHook(listingModel);
+        await webhookPersistance.MarkAsSent(listingModel);
 
         logger.LogInformation("Webhook sent and history saved");
     }
