@@ -12,8 +12,8 @@ RUN apt-get update \
 
 ENV PUPPETEER_EXECUTABLE_PATH "/usr/bin/google-chrome-stable"
 
-RUN apt-get update
-RUN apt-get install -y xvfb
+RUN mkdir -p /data \
+ && chown -R app /data
 
 USER app
 WORKDIR /app
