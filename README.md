@@ -4,12 +4,12 @@
 
 `marcel0024/funda-scraper` docker image provides the easiest way to perform web scraping on Funda, the Dutch housing website.
 You simply provide the URL that you want to be scraped with the prefilled search criteria, and the image does the rest. 
-You can either have webhooks to be notified about new listings (works best with something like HomeAssistant). Or you can review the `results.csv`.
+You can either have webhooks to be notified about new listings (works best with something like `HomeAssistant`). Or you can review the `results.csv`.
 Scraping times are set by a CRON expression, so you can set it to once a day, twice a day, etc.
 
 What makes this scraper unique is, it imitates a real user browsing the website.
 It opens a browser, loads the page, and waits for the page to load and then scrapes it. Further more you can override all selectors to make it work with future changes on the website.
-That way you don't have to wait for the image to be updated. The only downside is, scraping time takes longer to complete. Hence a container with CRON possibilites.
+That way you don't have to wait for the image to be updated.
 
 Please note:
 
@@ -50,7 +50,7 @@ services:
 
 | Variable                   | Required         | Default      | Description                                                                                                                                                                                                                                |
 | -------------------------- | ---------------- | ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `CRON`                     | No (has default) | `0 07 * * *` | Every day at 7AM in the morning.                                                                                                                                                                                                           |
+| `CRON`                     | No (has default) | `0 7 * * *` | Every day at 7AM in the morning.                                                                                                                                                                                                           |
 | `FUNDA_URL`                | Yes              | -            | The starting URL to scrape. You can build the parameters in the browser and just copy the link. Pricing, area, location, etc are all embedded in the URL, so make sure you filter it on the website before you copy it.                                                                                                                                                                      |
 | `WEBHOOK_URL`              | No               | -            | The webhook URL to send the new listings to.                                                                                                                                                                                               |
 | `ERROR_WEBHOOK_URL`        | No               | -            | The webhook URL to send errors to parsing fails and stops the app.                                                                                                                                                                         |
@@ -60,7 +60,7 @@ services:
 | `PAGE_CRAWL_LIMIT`         | No               | `500`        | The total pages it can crawl for each run.  Highly unlikely this needs to be edited.                                                                                                                                                       |
 | `TOTAL_PARALLELISM_DEGREE` | No               | 5            | Total browsers that can be open at the same time. It's a balance with hardware specs/site limits before blocking and how fast the scraping needs to be done. These are all done within the container you won't physically see the browser. |
 
-### Selectors
+### Selector variables
 
 | Variable               | Default             | Description                     |
 | ---------------------- | ------------------- | ------------------------------- |
@@ -79,9 +79,9 @@ A post is done to the WEBHOOK_URL for each listing with the following JSON objec
  {
   "name": "Lorem Ipsum",
   "price": "€ 12334",
-  "zipcode": "1234",
+  "zipCode": "1234",
   "area": "100 m²",
-  "totalrooms": "4",
+  "totalRooms": "4",
   "url": "https://funda.nl/koop/#example-link"
  }
 ```
@@ -100,7 +100,7 @@ action:
   - service: notify.mobile_app_android # Replace with your own
     data:
       title: Funda Alert
-      message: "{{ trigger.json.title }} {{ trigger.json.zipcode }} is te koop voor {{ trigger.json.price }}"
+      message: "{{ trigger.json.title }} {{ trigger.json.zipCode }} is te koop voor {{ trigger.json.price }}"
       data:
         clickAction: "{{ trigger.json.url }}"
 mode: single
