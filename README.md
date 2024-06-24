@@ -25,7 +25,7 @@ Note `--tty` and `--cap-add=SYS_ADMIN` are required.
 
 ```bash
 docker run --tty \
-    -v /data/fundascraper:/data \
+    -v /data/fundascraper:/home/app/data \
     -e FUNDA_URL="https://www.funda.nl/zoeken/koop?selected_area=%5B%22amsterdam%22%5D&object_type=%5B%22house%22%5D&price=%22-450000%22" \
     -e WEBHOOK_URL="http://homeassistantlocal.ip/api/webhook/123-redacted-key" \
     ghcr.io/marcel0024/funda-scraper:latest
@@ -43,7 +43,7 @@ services:
       - FUNDA_URL=https://www.funda.nl/zoeken/koop?selected_area=%5B%22amsterdam%22%5D&object_type=%5B%22house%22%5D&price=%22-450000%22
       - WEBHOOK_URL=http://homeassistantlocal.ip/api/webhook/123-redacted-key
     volumes:
-      - /data/fundascraper:/data
+      - /data/fundascraper:/home/app/data
 ```
 
 ## Environment Variables
