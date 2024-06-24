@@ -12,11 +12,8 @@ RUN apt-get update \
 
 ENV PUPPETEER_EXECUTABLE_PATH "/usr/bin/google-chrome-stable"
 
-RUN useradd --create-home app
 USER app
 RUN mkdir /home/app/data
-
-USER app
 WORKDIR /home/app
 
 COPY ./publish .
