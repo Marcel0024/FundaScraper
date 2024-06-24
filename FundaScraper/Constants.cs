@@ -4,7 +4,8 @@ internal static class Constants
 {
     internal static class FileNames
     {
-        internal static string WebhooksHistoryJson = Path.Combine("/home", "app", "data", "webhooks-history.json");
-        internal static string ResultsFilePath = Path.Combine("/home", "app", "data", "results.csv");
+        private static string BasePath = Path.Combine("/", "data");
+        internal static string WebhooksHistoryJson = Path.Combine(BasePath, "webhooks-history.json");
+        internal static string ResultsFilePath = Path.Combine(BasePath, "results.csv");
     }
 }

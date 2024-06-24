@@ -12,9 +12,11 @@ RUN apt-get update \
 
 ENV PUPPETEER_EXECUTABLE_PATH "/usr/bin/google-chrome-stable"
 
+RUN mkdir -p /data
+RUN chown -R app /data
+
 USER app
-RUN mkdir /home/app/data
-WORKDIR /home/app
+WORKDIR /app
 
 COPY ./publish .
 

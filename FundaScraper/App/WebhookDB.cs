@@ -46,8 +46,6 @@ internal class WebhookDB
     {
         var json = JsonSerializer.Serialize(model);
 
-        Directory.CreateDirectory(Path.GetDirectoryName(WebhooksHistoryJson)!);
-
         await File.WriteAllTextAsync(WebhooksHistoryJson, json);
     }
 }

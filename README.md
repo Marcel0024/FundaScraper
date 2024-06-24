@@ -25,7 +25,7 @@ Note `--tty` and `--cap-add=SYS_ADMIN` are required.
 
 ```bash
 docker run --tty \
-    -v /data/fundascraper:/home/app/data \
+    -v /data/fundascraper:/data \
     -e FUNDA_URL="https://www.funda.nl/zoeken/koop?selected_area=%5B%22amsterdam%22%5D&object_type=%5B%22house%22%5D&price=%22-450000%22" \
     -e WEBHOOK_URL="http://homeassistantlocal.ip/api/webhook/123-redacted-key" \
     ghcr.io/marcel0024/funda-scraper:latest
@@ -43,7 +43,7 @@ services:
       - FUNDA_URL=https://www.funda.nl/zoeken/koop?selected_area=%5B%22amsterdam%22%5D&object_type=%5B%22house%22%5D&price=%22-450000%22
       - WEBHOOK_URL=http://homeassistantlocal.ip/api/webhook/123-redacted-key
     volumes:
-      - /data/fundascraper:/home/app/data
+      - /data/fundascraper:/data
 ```
 
 ## Environment Variables
@@ -105,3 +105,17 @@ action:
         clickAction: "{{ trigger.json.url }}"
 mode: single
 ```
+
+
+## Troubleshoot/Common issues
+
+### UnauthorizedAccessException: Access to the path '/data/results.csv' is denied
+
+The app inside the container is running as non-root user. So the application is running as the predefined `app` user which has UID 64198. 
+
+For it to be able to create files in the mounted directory, UID 64198 needs to be able to create files on the host in the `/data/fundascraper` directory (the one defined in the volume).
+
+You can do that by giving public write access on the host using `chmod o+w /data/fundascraper`.
+
+If that's too permissive, you can create a user on the host with UID 64198 and give that user group access to the directory.
+
