@@ -12,7 +12,7 @@ internal class WebhookSink(
     IOptions<FundaScraperSettings> settings,
     IHttpClientFactory httpClientFactory,
     TimeProvider timeProvider,
-    WebhookDB webhookTracker) : IScraperSink
+    WebhookPersistanceTracker webhookPersistance) : IScraperSink
 {
     public bool DataCleanupOnStart { get; set; } = false;
 
@@ -36,7 +36,10 @@ internal class WebhookSink(
         listingModel.Url = entity.Url;
         listingModel.DateTimeAdded = timeProvider.GetLocalNow();
 
-        if (listingModel is null || listingModel.Title is null || listingModel.Price is null || webhookTracker.Contains(listingModel))
+        if (listingModel is null 
+            || listingModel.Title is null 
+            || listingModel.Price is null 
+            || webhookPersistance.Contains(listingModel))
         {
             return;
         }
@@ -48,7 +51,7 @@ internal class WebhookSink(
 
         response.EnsureSuccessStatusCode();
 
-        await webhookTracker.SaveWebHook(listingModel);
+        await webhookPersistance.SaveWebHook(listingModel);
 
         logger.LogInformation("Webhook sent and history saved");
     }

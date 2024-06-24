@@ -16,13 +16,13 @@ builder.Services.AddOptions<FundaScraperSettings>()
     .ValidateDataAnnotations()
     .ValidateOnStart();
 
-builder.Services.AddSingleton<CronPeriodicTimer>();
-builder.Services.AddSingleton<WebhookSink>();
-builder.Services.AddSingleton<WebhookDB>();
+builder.Services.AddHttpClient();
 
 builder.Services.AddSingleton(TimeProvider.System);
+builder.Services.AddSingleton<CronPeriodicTimer>();
+builder.Services.AddSingleton<WebhookSink>();
+builder.Services.AddSingleton<WebhookPersistanceTracker>();
 
-builder.Services.AddHttpClient();
 builder.Services.AddHostedService<FundaScraperBackgroundService>();
 
 // If the scraper crashes kill the app

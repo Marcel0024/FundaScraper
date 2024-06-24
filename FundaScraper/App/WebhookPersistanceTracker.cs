@@ -2,12 +2,12 @@
 
 namespace FundaScraper.App;
 
-internal class WebhookDB
+internal class WebhookPersistanceTracker
 {
     private readonly string WebhooksHistoryJson = Constants.FileNames.WebhooksHistoryJson;
     private  Dictionary<string, ListingModel> Listings { get; init; }
 
-    public WebhookDB()
+    public WebhookPersistanceTracker()
     {
         Listings = GetHistoryFile().GetAwaiter().GetResult().Listings;
     }

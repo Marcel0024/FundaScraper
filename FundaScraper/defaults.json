@@ -1,5 +1,5 @@
 {
-  "CRON": "0 07 * * *",
+  "CRON": "0 7 * * *",
   "PAGE_CRAWL_LIMIT": 500,
   "START_PAGE": 1,
   "TOTAL_PAGES": 5,
