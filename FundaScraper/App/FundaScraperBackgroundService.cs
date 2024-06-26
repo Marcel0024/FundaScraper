@@ -12,59 +12,70 @@ using WebReaper.Sinks.Concrete;
 namespace FundaScraper.App;
 
 internal class FundaScraperBackgroundService(
-    ILogger<FundaScraperBackgroundService> logger,
-    IOptions<FundaScraperSettings> settings,
+    ILoggerFactory loggerFactory,
+    IOptions<FundaScraperSettings> appSettings,
     IHttpClientFactory httpClientFactory,
     WebhookSink webhookSink,
-    CronPeriodicTimer periodicTimer) : BackgroundService
+    CronPeriodicTimer periodicTimer,
+    TimeProvider timeProvider) : BackgroundService
 {
-    private readonly bool IsErrorWebhookEnabled = !string.IsNullOrWhiteSpace(settings.Value.ErrorWebHookUrl);
+    private readonly FundaScraperSettings settings = appSettings.Value;
+    private readonly ILogger logger = loggerFactory.CreateLogger(typeof(FundaScraperBackgroundService).FullName!);
+    private readonly bool IsErrorWebhookEnabled = !string.IsNullOrWhiteSpace(appSettings.Value.ErrorWebHookUrl);
 
-    protected override async Task ExecuteAsync(CancellationToken cancellationToken)
+    private ScraperEngine ScraperEngine { get; set; } = default!;
+
+    public override async Task StartAsync(CancellationToken cancellationToken)
     {
-        var urlsToScrape = GetFundaUrlPaginatedPages(settings.Value.FundaUrl, settings.Value.StartPage, settings.Value.TotalPages);
+        var urlsToScrape = GetFundaUrlPaginatedPages(settings.FundaUrl, settings.StartPage, settings.TotalPages);
 
-        var scraperEngine = await new ScraperEngineBuilder()
+        ScraperEngine = await new ScraperEngineBuilder()
             .GetWithBrowser(urlsToScrape, actions => actions
                 .ScrollToEnd()
                 .Build())
-            .PaginateWithBrowser(settings.Value.ListingLinkSelector, ".dont-exist", actions => actions
-                .Wait(milliseconds: settings.Value.WaitOnScrapingPageMilliseconds)
+            .PaginateWithBrowser(settings.ListingLinkSelector, settings.PaginationSelector, actions => actions
+                .Wait(milliseconds: settings.WaitOnScrapingPageMilliseconds)
                 .ScrollToEnd()
                 .Build())
             .HeadlessMode(false)
-            .WithLogger(logger)
+            .WithLogger(loggerFactory.CreateLogger(nameof(ScraperEngine)))
             .Parse(
                 [
-                    new(nameof(ListingModel.Title), settings.Value.TitleSelector),
-                    new(nameof(ListingModel.ZipCode), settings.Value.ZipCodeSelector),
-                    new(nameof(ListingModel.Price), settings.Value.PriceSelector),
-                    new(nameof(ListingModel.Area), settings.Value.AreaSelector),
-                    new(nameof(ListingModel.TotalRooms), settings.Value.TotalRoomsSelector)
+                    new(nameof(ListingModel.Title), settings.TitleSelector),
+                    new(nameof(ListingModel.ZipCode), settings.ZipCodeSelector),
+                    new(nameof(ListingModel.Price), settings.PriceSelector),
+                    new(nameof(ListingModel.Area), settings.AreaSelector),
+                    new(nameof(ListingModel.TotalRooms), settings.TotalRoomsSelector)
                 ])
             .AddSink(webhookSink)
             .AddSink(new CsvFileSink(Constants.FileNames.ResultsFilePath, dataCleanupOnStart: true))
-            .WithParallelismDegree(settings.Value.ParallelismDegree)
-            .PageCrawlLimit(settings.Value.PageCrawlLimit)
+            .IgnoreUrls([.. settings.IgnoreUrls])
+            .WithParallelismDegree(settings.ParallelismDegree)
+            .PageCrawlLimit(settings.PageCrawlLimit)
             .BuildAsync();
 
-        if (settings.Value.RunOnStartup)
+        await base.StartAsync(cancellationToken);
+    }
+
+    protected override async Task ExecuteAsync(CancellationToken cancellationToken)
+    {
+        if (settings.RunOnStartup)
         {
-            await Scrape(scraperEngine, cancellationToken);
+            await Scrape(ScraperEngine, cancellationToken);
         }
 
         while (await periodicTimer.WaitForNextTickAsync(cancellationToken))
         {
-            await Scrape(scraperEngine, cancellationToken);
+            await Scrape(ScraperEngine, cancellationToken);
         }
     }
 
     private async Task Scrape(ScraperEngine scraperEngine, CancellationToken cancellationToken)
     {
-        logger.LogInformation("Starting scraping run.");
+        logger.LogInformation("{datetimenow} Starting scraping run.", timeProvider.GetLocalNow());
 
         // The engine doesn't kill it's self after scraping everything, so we time box it.
-        using var timeboxCts = new CancellationTokenSource(TimeSpan.FromMinutes(settings.Value.ScraperEngineTimeBoxInMinutes));
+        using var timeboxCts = new CancellationTokenSource(TimeSpan.FromMinutes(settings.ScraperEngineTimeBoxInMinutes));
         using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeboxCts.Token);
 
         try
@@ -85,7 +96,7 @@ internal class FundaScraperBackgroundService(
             throw;
         }
 
-        logger.LogInformation("Finished scraping run. Waiting for next tick.");
+        logger.LogInformation("{datetimenow} Finished scraping run. Waiting for next tick.", timeProvider.GetLocalNow());
     }
 
     private async Task NotifyErrorWebHook(string errorMessage, CancellationToken cancellationToken)
@@ -93,7 +104,7 @@ internal class FundaScraperBackgroundService(
         try
         {
             using var http = httpClientFactory.CreateClient();
-            await http.PostAsJsonAsync(settings.Value.ErrorWebHookUrl, new
+            await http.PostAsJsonAsync(settings.ErrorWebHookUrl, new
             {
                 message = $"{errorMessage}. Funda probably changed their site."
             }, cancellationToken);
@@ -108,11 +119,11 @@ internal class FundaScraperBackgroundService(
     {
         return Enumerable.Range(startPage, totalPages).Select(i =>
         {
-            var urlWithQueryPath = HttpUtility.ParseQueryString(fundaUrl);
+            var uri = HttpUtility.ParseQueryString(fundaUrl);
 
-            urlWithQueryPath["search_result"] = i.ToString();
+            uri["search_result"] = i.ToString();
 
-            return urlWithQueryPath!.ToString()!;
+            return uri!.ToString()!;
         }).ToArray();
     }
 }

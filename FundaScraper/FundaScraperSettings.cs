@@ -1,18 +1,19 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using Cronos;
+using Microsoft.Extensions.Configuration;
 using System.ComponentModel.DataAnnotations;
 
-namespace FundaScraper.Models;
+namespace FundaScraper;
 
 internal class FundaScraperSettings
 {
     /// <summary>
     /// ENGINE SETTINGS
     /// </summary>
-    [Required]
+    [Required, CronExpression]
     [ConfigurationKeyName("CRON")]
     public required string CronExpression { get; init; }
 
-    [Url(startsWith: "https://www.funda.nl", isRequired: true)]
+    [Required, Url(startsWith: "https://www.", isRequired: true)]
     [ConfigurationKeyName("FUNDA_URL")]
     public required string FundaUrl { get; init; }
 
@@ -32,8 +33,12 @@ internal class FundaScraperSettings
     [ConfigurationKeyName("TOTAL_PAGES")]
     public int TotalPages { get; init; } = default!;
 
-    [Required, ConfigurationKeyName("RUN_ON_STARTUP")]
+    [Required]
+    [ConfigurationKeyName("RUN_ON_STARTUP")]
     public bool RunOnStartup { get; init; }
+
+    [ConfigurationKeyName("IGNORE_URLS")]
+    public IReadOnlyCollection<string> IgnoreUrls { get; init; } = [];
 
     /// <summary>
     /// CSS SELECTORS
@@ -41,6 +46,9 @@ internal class FundaScraperSettings
     [Required]
     [ConfigurationKeyName("LISTING_SELECTOR")]
     public required string ListingLinkSelector { get; init; }
+    [Required]
+    [ConfigurationKeyName("PAGINATION_SELECTOR")]
+    public required string PaginationSelector { get; init; }
     [Required]
     [ConfigurationKeyName("TITLE_SELECTOR")]
     public required string TitleSelector { get; init; }
@@ -56,7 +64,6 @@ internal class FundaScraperSettings
     [Required]
     [ConfigurationKeyName("TOTAL_ROOMS_SELECTOR")]
     public required string TotalRoomsSelector { get; init; }
-
 
     ///<summary>
     /// ADVANCED ENGINE SETTINGS
@@ -99,5 +106,14 @@ internal class UrlAttribute(string startsWith, bool isRequired)
         }
 
         return valueAsString.StartsWith(startsWith, StringComparison.OrdinalIgnoreCase);
+    }
+}
+
+internal class CronExpressionAttribute() 
+    : ValidationAttribute(errorMessage: "Invalid CRON expression")
+{
+    public override bool IsValid(object? value)
+    {
+        return value is null || CronExpression.TryParse(value.ToString(), CronFormat.Standard, out _);
     }
 }
