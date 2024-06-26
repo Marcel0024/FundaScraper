@@ -1,5 +1,4 @@
 ﻿using Cronos;
-using FundaScraper.Models;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -11,8 +10,6 @@ internal class CronPeriodicTimer(ILogger<CronPeriodicTimer> logger, IOptions<Fun
 
     public async ValueTask<bool> WaitForNextTickAsync(CancellationToken cancellationToken)
     {
-        cancellationToken.ThrowIfCancellationRequested();
-
         var utcNow = timeProvider.GetUtcNow();
 
         // Edge cases of timer ticking twice - and PeriodicTimer has a minimum period of 1ms

@@ -18,6 +18,7 @@ internal class WebhookSink(
     public bool DataCleanupOnStart { get; set; } = false;
 
     private readonly JsonSerializerOptions serializerOptions = new(JsonSerializerDefaults.Web);
+    private readonly string? WebHookUrl = settings.Value.WebHookUrl;
     private readonly bool IsWebhookEnabled = !string.IsNullOrWhiteSpace(settings.Value.WebHookUrl);
 
     public async Task EmitAsync(ParsedData entity, CancellationToken cancellationToken = default)
@@ -27,10 +28,7 @@ internal class WebhookSink(
             return;
         }
 
-        ListingModel listingModel;
-
-
-        listingModel = JsonSerializer.Deserialize<ListingModel>(entity.Data.ToString())!;
+        var listingModel = JsonSerializer.Deserialize<ListingModel>(entity.Data.ToString())!;
 
         listingModel.Url = entity.Url;
         listingModel.DateTimeAdded = timeProvider.GetLocalNow();
@@ -46,7 +44,7 @@ internal class WebhookSink(
         logger.LogInformation("Sending webhook of {title}.", listingModel.Title);
 
         using var http = httpClientFactory.CreateClient();
-        var response = await http.PostAsJsonAsync(settings.Value.WebHookUrl, listingModel, serializerOptions, cancellationToken);
+        var response = await http.PostAsJsonAsync(WebHookUrl, listingModel, serializerOptions, cancellationToken);
 
         response.EnsureSuccessStatusCode();
 
