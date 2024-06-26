@@ -1,6 +1,7 @@
+# FundaScraper - Automate Listings with Docker and Webhooks
+
 [![Build and Publish](https://github.com/Marcel0024/FundaScraper/actions/workflows/build-and-publish-image.yaml/badge.svg?branch=main)](https://github.com/Marcel0024/FundaScraper/actions/workflows/build-and-publish-image.yaml)
 
-# FundaScraper - Automate Listings with Docker and Webhooks
 
 `marcel0024/funda-scraper` docker image provides the easiest way to perform web scraping on Funda, the Dutch housing website.
 You simply provide the URL that you want to be scraped with the prefilled search criteria, and the image does the rest. 
