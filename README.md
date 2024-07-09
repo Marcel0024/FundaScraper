@@ -1,7 +1,9 @@
 # FundaScraper - Automate Listings with Docker and Webhooks
 
 [![Build and Publish](https://github.com/Marcel0024/FundaScraper/actions/workflows/build-and-publish-image.yaml/badge.svg?branch=main)](https://github.com/Marcel0024/FundaScraper/actions/workflows/build-and-publish-image.yaml)
+![Static Badge](https://img.shields.io/badge/ghcr.io%2Fmarcel0024%2Ffunda--scraper-1.3.0-purple?logo=github&logoSize=auto&labelColor=262b30&link=https%3A%2F%2Fgithub.com%2FMarcel0024%2FFundaScraper)
 
+<br />
 
 `marcel0024/funda-scraper` docker image provides the easiest way to perform web scraping on Funda, the Dutch housing website.
 You simply provide the URL that you want to be scraped with the prefilled search criteria, and the image does the rest. 
@@ -9,7 +11,7 @@ You can either have webhooks to be notified about new listings (works best with 
 Scraping times are set by a CRON expression, so you can set it to once a day, twice a day, etc.
 
 What makes this scraper unique is, it imitates a real user browsing the website.
-It opens a browser, loads the page, and waits for the page to load and then scrapes it. Further more you can override all selectors to make it work with future changes on the website.
+It opens a tab inside the browser, loads the page, and waits for the page to load and then scrapes it. Further more you can override all selectors to make it work with future changes on the website.
 That way you don't have to wait for the image to be updated. Note the browser windows are all opened insided the container you won't physically see the browser.
 
 Please note:
@@ -50,27 +52,28 @@ services:
 
 ## Environment Variables
 
-| Variable                   | Required         | Default     | Description                                                                                                                                                                                                                                          |
-| -------------------------- | ---------------- | ----------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `CRON`                     | No (has default) | `0 7 * * *` | Every day at 7AM in the morning.                                                                                                                                                                                                                     |
-| `FUNDA_URL`                | Yes              | -           | The starting URL to scrape. You can build the parameters in the browser and just copy the link. Pricing, area, location, etc are all embedded in the URL, so make sure you filter it on the website before you copy it.                              |
-| `WEBHOOK_URL`              | No               | -           | The webhook URL to send the new listings to. Note: the first run of the app of a new area you will get spammed, since everything is considered new.                                                                                                  |
-| `ERROR_WEBHOOK_URL`        | No               | -           | The webhook URL to send errors to parsing fails and stops the app.                                                                                                                                                                                   |
-| `START_PAGE`               | No               | 1           | The page to start with (pagination)                                                                                                                                                                                                                  |
-| `TOTAL_PAGES`              | No               | 5           | Total pages to scrape. Increase this if you're quering a big area.                                                                                                                                                                                   |
-| `RUN_ON_STARTUP`           | No               | `false`     | Run the crawl on startup. If `false` the next run depends on the `CRON` value.                                                                                                                                                                       |
-| `TOTAL_PARALLELISM_DEGREE` | No               | 5           | Total browsers that can be open at the same time. It's a balance with hardware specs, site limitations against scraping and how fast you want the scraping to be done. These are all done within the container you won't physically see the browser. |
+| Variable                   | Required         | Default     | Description                                                                                                                                                                                                                                                         |
+| -------------------------- | ---------------- | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `CRON`                     | No (has default) | `0 7 * * *` | Every day at 7AM in the morning.                                                                                                                                                                                                                                    |
+| `FUNDA_URL`                | Yes              | -           | The starting URL to scrape. You can build the parameters in the browser and just copy the link. Pricing, area, location, etc are all embedded in the URL, so make sure you filter it on the website before you copy it.                                             |
+| `WEBHOOK_URL`              | No               | -           | The webhook URL to send the new listings to. Note: the first run of the app of a new area you will get spammed, since everything is considered new.                                                                                                                 |
+| `ERROR_WEBHOOK_URL`        | No               | -           | The webhook URL to send errors to parsing fails and stops the app.                                                                                                                                                                                                  |
+| `START_PAGE`               | No               | 1           | The page to start with (pagination)                                                                                                                                                                                                                                 |
+| `TOTAL_PAGES`              | No               | 10          | Total pages to scrape. Increase this if you're quering a big area.                                                                                                                                                                                                  |
+| `RUN_ON_STARTUP`           | No               | false       | Run the crawl on startup. If `false` the next run depends on the `CRON` value.                                                                                                                                                                                      |
+| `TOTAL_PARALLELISM_DEGREE` | No               | 35          | Total tabs inside the browser that can be open at the same time. It's a balance with hardware specs, site limitations against scraping and how fast you want the scraping to be done. These are all done within the container you won't physically see the browser. |
 
 ### Selector variables
 
-| Variable               | Default                          | Description                     |
-| ---------------------- | -------------------------------- | ------------------------------- |
-| `LISTING_SELECTOR`     | See `FundaScraper/defaults.json` | The selector to click a listing |
-| `TITLE_SELECTOR`       | See `FundaScraper/defaults.json` | The selector for the address    |
-| `ZIP_CODE_SELECTOR`    | See `FundaScraper/defaults.json` | The selector for the zipcode    |
-| `PRICE_SELECTOR`       | See `FundaScraper/defaults.json` | The selector for the price      |
-| `AREA_SELECTOR`        | See `FundaScraper/defaults.json` | The selector for the area       |
-| `TOTAL_ROOMS_SELECTOR` | See `FundaScraper/defaults.json` | The selector for total rooms    |
+| Variable                      | Default                          | Description                                                                                                                                    |
+| ----------------------------- | -------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| `LISTING_CONTAINERS_SELECTOR` | See `FundaScraper/defaults.json` | The selector for the containers holding a listing - should return a list of objects. The rest of the selectors are from inside this container. |
+| `TITLE_SELECTOR`              | See `FundaScraper/defaults.json` | The selector for the address                                                                                                                   |
+| `ZIP_CODE_SELECTOR`           | See `FundaScraper/defaults.json` | The selector for the zipcode                                                                                                                   |
+| `URL_SELECTOR`                | See `FundaScraper/defaults.json` | The selector for the URL                                                                                                                       |
+| `PRICE_SELECTOR`              | See `FundaScraper/defaults.json` | The selector for the price                                                                                                                     |
+| `AREA_SELECTOR`               | See `FundaScraper/defaults.json` | The selector for the area                                                                                                                      |
+| `TOTAL_ROOMS_SELECTOR`        | See `FundaScraper/defaults.json` | The selector for total rooms                                                                                                                   |
 
 
 # Webhook object
