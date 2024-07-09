@@ -1,13 +1,12 @@
-﻿using FundaScraper.Models;
+﻿using CocoCrawler;
+using CocoCrawler.Builders;
+using FundaScraper.Models;
 using FundaScraper.Utilities;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System.Net.Http.Json;
 using System.Web;
-using WebReaper.Builders;
-using WebReaper.Core;
-using WebReaper.Sinks.Concrete;
 
 namespace FundaScraper.App;
 
@@ -15,44 +14,42 @@ internal class FundaScraperBackgroundService(
     ILoggerFactory loggerFactory,
     IOptions<FundaScraperSettings> appSettings,
     IHttpClientFactory httpClientFactory,
-    WebhookSink webhookSink,
+    WebhookCrawlOutput webhookCrawlOutput,
     CronPeriodicTimer periodicTimer,
     TimeProvider timeProvider) : BackgroundService
 {
     private readonly FundaScraperSettings settings = appSettings.Value;
-    private readonly ILogger logger = loggerFactory.CreateLogger(typeof(FundaScraperBackgroundService).FullName!);
-    private readonly bool IsErrorWebhookEnabled = !string.IsNullOrWhiteSpace(appSettings.Value.ErrorWebHookUrl);
+    private readonly ILogger logger = loggerFactory.CreateLogger<FundaScraperBackgroundService>();
 
-    private ScraperEngine ScraperEngine { get; set; } = default!;
+    private CrawlerEngine ScraperEngine { get; set; } = default!;
 
     public override async Task StartAsync(CancellationToken cancellationToken)
     {
         var urlsToScrape = GetFundaUrlPaginatedPages(settings.FundaUrl, settings.StartPage, settings.TotalPages);
 
-        ScraperEngine = await new ScraperEngineBuilder()
-            .GetWithBrowser(urlsToScrape, actions => actions
-                .ScrollToEnd()
-                .Build())
-            .PaginateWithBrowser(settings.ListingLinkSelector, settings.PaginationSelector, actions => actions
-                .Wait(milliseconds: settings.WaitOnScrapingPageMilliseconds)
-                .ScrollToEnd()
-                .Build())
-            .HeadlessMode(false)
-            .WithLogger(loggerFactory.CreateLogger(nameof(ScraperEngine)))
-            .Parse(
-                [
+        ScraperEngine = await new CrawlerEngineBuilder()
+            .AddPages(urlsToScrape, (page) => page
+                .ConfigurePageActions(options => options.ScrollToEnd().Wait(settings.WaitOnScrapingPageMilliseconds))
+                .ExtractList(settings.ListingContainersSelector, [
+                    new(nameof(ListingModel.Url), settings.UrlSelector, "href"),
                     new(nameof(ListingModel.Title), settings.TitleSelector),
                     new(nameof(ListingModel.ZipCode), settings.ZipCodeSelector),
                     new(nameof(ListingModel.Price), settings.PriceSelector),
                     new(nameof(ListingModel.Area), settings.AreaSelector),
                     new(nameof(ListingModel.TotalRooms), settings.TotalRoomsSelector)
                 ])
-            .AddSink(webhookSink)
-            .AddSink(new CsvFileSink(Constants.FileNames.ResultsFilePath, dataCleanupOnStart: true))
-            .IgnoreUrls([.. settings.IgnoreUrls])
-            .WithParallelismDegree(settings.ParallelismDegree)
-            .PageCrawlLimit(settings.PageCrawlLimit)
-            .BuildAsync();
+                .AddPagination(settings.PaginationSelector)
+                .AddOutputToCsvFile(Constants.FileNames.ResultsFilePath, cleanOnStartup: true)
+                .AddOutput(webhookCrawlOutput)
+            )
+            .ConfigureEngine(options => options
+                .UseHeadlessMode(false)
+                .WithParallelismDegree(settings.ParallelismDegree)
+                .WithIgnoreUrls([.. settings.IgnoreUrls])
+                .WithLoggerFactory(loggerFactory)
+                .TotalPagesToCrawl(settings.PageCrawlLimit)
+            )
+            .BuildAsync(cancellationToken);
 
         await base.StartAsync(cancellationToken);
     }
@@ -70,25 +67,17 @@ internal class FundaScraperBackgroundService(
         }
     }
 
-    private async Task Scrape(ScraperEngine scraperEngine, CancellationToken cancellationToken)
+    private async Task Scrape(CrawlerEngine scraperEngine, CancellationToken cancellationToken)
     {
         logger.LogInformation("{datetimenow} Starting scraping run.", timeProvider.GetLocalNow());
 
-        // The engine doesn't kill it's self after scraping everything, so we time box it.
-        using var timeboxCts = new CancellationTokenSource(TimeSpan.FromMinutes(settings.ScraperEngineTimeBoxInMinutes));
-        using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeboxCts.Token);
-
         try
         {
-            await scraperEngine.RunAsync(cts.Token);
-        }
-        catch (OperationCanceledException)
-        {
-            // Timeboxed - ignore
+            await scraperEngine.RunAsync(cancellationToken);
         }
         catch (Exception ex)
         {
-            if (IsErrorWebhookEnabled)
+            if (settings.IsErrorWebhookEnabled)
             {
                 await NotifyErrorWebHook(ex.Message, cancellationToken);
             }

@@ -1,17 +1,17 @@
 {
   "CRON": "0 7 * * *",
   "START_PAGE": 1,
-  "TOTAL_PAGES": 5,
+  "TOTAL_PAGES": 10,
   "RUN_ON_STARTUP": false,
   "PAGE_CRAWL_LIMIT": 500,
-  "TOTAL_PARALLELISM_DEGREE": 5,
-  "ENGINE_TIME_BOX_IN_MINUTES": 10,
-  "WAIT_ON_SCRAPING_PAGE_MILLISECONDS": 3000,
-  "LISTING_SELECTOR": "a[data-test-id=\"object-image-link\"]",
-  "PAGINATION_SELECTOR": ".dont-exist",
-  "TITLE_SELECTOR": "h1.object-header__container > span.block.text-2xl.font-bold",
-  "ZIP_CODE_SELECTOR": "h1.object-header__container > span.text-neutral-40",
-  "PRICE_SELECTOR": "div.mt-5.flex.flex-wrap.items-center.gap-3 span",
-  "AREA_SELECTOR": "ul.mt-2.flex.flex-wrap.gap-4 > li:nth-child(1) span:first-of-type",
-  "TOTAL_ROOMS_SELECTOR": "ul.mt-2.flex.flex-wrap.gap-4 > li:nth-last-child(1) span:first-of-type"
+  "TOTAL_PARALLELISM_DEGREE": 35,
+  "WAIT_ON_SCRAPING_PAGE_MILLISECONDS": 1000,
+  "LISTING_CONTAINERS_SELECTOR": "div.border-neutral-20.mb-4.border-b.pb-4",
+  "TITLE_SELECTOR": "a.text-secondary-70.cursor-pointer h2",
+  "ZIP_CODE_SELECTOR": "a.text-secondary-70.cursor-pointer div",
+  "URL_SELECTOR": "a.text-secondary-70.cursor-pointer",
+  "PRICE_SELECTOR": "p.font-semibold",
+  "AREA_SELECTOR": "ul > li.flex:nth-child(1)",
+  "TOTAL_ROOMS_SELECTOR": "ul > li.flex:nth-child(2)",
+  "PAGINATION_SELECTOR": ".not-used"
 }

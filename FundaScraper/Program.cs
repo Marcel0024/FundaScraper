@@ -1,9 +1,9 @@
-﻿using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
+﻿using FundaScraper;
 using FundaScraper.App;
 using FundaScraper.Utilities;
-using FundaScraper;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
 var builder = Host.CreateApplicationBuilder();
 
@@ -20,8 +20,10 @@ builder.Services.AddHttpClient();
 
 builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddSingleton<CronPeriodicTimer>();
-builder.Services.AddSingleton<WebhookSink>();
-builder.Services.AddSingleton<WebhookPersistanceTracker>();
+
+builder.Services.AddSingleton<WebhookCrawlOutput>();
+builder.Services.AddSingleton<WebhookService>();
+builder.Services.AddHostedService<WebhookSenderBackgroundService>();
 
 builder.Services.AddHostedService<FundaScraperBackgroundService>();
 

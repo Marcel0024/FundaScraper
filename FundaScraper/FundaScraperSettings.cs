@@ -7,6 +7,34 @@ namespace FundaScraper;
 internal class FundaScraperSettings
 {
     /// <summary>
+    /// CSS SELECTORS
+    /// </summary>
+    [Required]
+    [ConfigurationKeyName("LISTING_CONTAINERS_SELECTOR")]
+    public required string ListingContainersSelector { get; init; }
+    [Required]
+    [ConfigurationKeyName("URL_SELECTOR")]
+    public required string UrlSelector { get; init; }
+    [Required]
+    [ConfigurationKeyName("PAGINATION_SELECTOR")]
+    public required string PaginationSelector { get; init; }
+    [Required]
+    [ConfigurationKeyName("TITLE_SELECTOR")]
+    public required string TitleSelector { get; init; }
+    [Required]
+    [ConfigurationKeyName("ZIP_CODE_SELECTOR")]
+    public required string ZipCodeSelector { get; init; }
+    [Required]
+    [ConfigurationKeyName("PRICE_SELECTOR")]
+    public required string PriceSelector { get; init; }
+    [Required]
+    [ConfigurationKeyName("AREA_SELECTOR")]
+    public required string AreaSelector { get; init; }
+    [Required]
+    [ConfigurationKeyName("TOTAL_ROOMS_SELECTOR")]
+    public required string TotalRoomsSelector { get; init; }
+
+    /// <summary>
     /// ENGINE SETTINGS
     /// </summary>
     [Required, CronExpression]
@@ -40,31 +68,6 @@ internal class FundaScraperSettings
     [ConfigurationKeyName("IGNORE_URLS")]
     public IReadOnlyCollection<string> IgnoreUrls { get; init; } = [];
 
-    /// <summary>
-    /// CSS SELECTORS
-    /// </summary>
-    [Required]
-    [ConfigurationKeyName("LISTING_SELECTOR")]
-    public required string ListingLinkSelector { get; init; }
-    [Required]
-    [ConfigurationKeyName("PAGINATION_SELECTOR")]
-    public required string PaginationSelector { get; init; }
-    [Required]
-    [ConfigurationKeyName("TITLE_SELECTOR")]
-    public required string TitleSelector { get; init; }
-    [Required]
-    [ConfigurationKeyName("ZIP_CODE_SELECTOR")]
-    public required string ZipCodeSelector { get; init; }
-    [Required]
-    [ConfigurationKeyName("PRICE_SELECTOR")]
-    public required string PriceSelector { get; init; }
-    [Required]
-    [ConfigurationKeyName("AREA_SELECTOR")]
-    public required string AreaSelector { get; init; }
-    [Required]
-    [ConfigurationKeyName("TOTAL_ROOMS_SELECTOR")]
-    public required string TotalRoomsSelector { get; init; }
-
     ///<summary>
     /// ADVANCED ENGINE SETTINGS
     ///</summary>
@@ -77,12 +80,11 @@ internal class FundaScraperSettings
     public int PageCrawlLimit { get; init; }
 
     [Required]
-    [ConfigurationKeyName("ENGINE_TIME_BOX_IN_MINUTES")]
-    public int ScraperEngineTimeBoxInMinutes { get; init; }
-
-    [Required]
     [ConfigurationKeyName("WAIT_ON_SCRAPING_PAGE_MILLISECONDS")]
     public int WaitOnScrapingPageMilliseconds { get; init; }
+
+    internal bool IsWebhookEnabled => !string.IsNullOrWhiteSpace(WebHookUrl);
+    internal bool IsErrorWebhookEnabled => !string.IsNullOrWhiteSpace(ErrorWebHookUrl);
 }
 
 internal class UrlAttribute(string startsWith, bool isRequired)
